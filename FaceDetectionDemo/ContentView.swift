@@ -347,94 +347,6 @@ struct ColorSlider: View {
     }
 }
 
-// MARK: - AR Camera View
-struct ARCameraView: UIViewRepresentable {
-    @ObservedObject var viewModel: MakeupViewModel
-    
-    func makeUIView(context: Context) -> ARSCNView {
-        let arView = ARSCNView()
-        arView.delegate = context.coordinator
-        arView.session.delegate = context.coordinator
-        
-        // Configure AR session for face tracking
-        let configuration = ARFaceTrackingConfiguration()
-        if ARFaceTrackingConfiguration.isSupported {
-            arView.session.run(configuration)
-        }
-        
-        return arView
-    }
-    
-    func updateUIView(_ uiView: ARSCNView, context: Context) {
-        context.coordinator.viewModel = viewModel
-    }
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(viewModel: viewModel)
-    }
-    
-    class Coordinator: NSObject, ARSCNViewDelegate, ARSessionDelegate {
-        var viewModel: MakeupViewModel
-        var faceNode: SCNNode?
-        var lipNode: SCNNode?
-        
-        init(viewModel: MakeupViewModel) {
-            self.viewModel = viewModel
-        }
-        
-        func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-            guard let faceAnchor = anchor as? ARFaceAnchor else { return nil }
-            
-            let faceNode = SCNNode()
-            self.faceNode = faceNode
-            
-            updateLipColor(for: faceAnchor, faceNode: faceNode)
-            
-            return faceNode
-        }
-        
-        func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-            guard let faceAnchor = anchor as? ARFaceAnchor,
-                  let faceNode = self.faceNode else { return }
-            
-            updateLipColor(for: faceAnchor, faceNode: faceNode)
-        }
-        
-        func updateLipColor(for faceAnchor: ARFaceAnchor, faceNode: SCNNode) {
-            // Remove existing lip node
-            lipNode?.removeFromParentNode()
-            
-            // Only apply if Lip feature is selected
-            guard viewModel.selectedFeature == .lip else { return }
-            
-            // Create geometry from face anchor
-            let geometry = ARSCNFaceGeometry(device: MTLCreateSystemDefaultDevice()!)
-            geometry?.update(from: faceAnchor.geometry)
-            
-            // Create material with selected color
-            let material = SCNMaterial()
-            if let components = viewModel.selectedColor.cgColor?.components {
-                material.diffuse.contents = UIColor(
-                    red: CGFloat(components[0]),
-                    green: CGFloat(components[1]),
-                    blue: CGFloat(components[2]),
-                    alpha: 0.7
-                )
-            }
-            material.transparency = 0.7
-            
-            geometry?.materials = [material]
-            
-            // Create node for lips only
-            let node = SCNNode(geometry: geometry)
-            node.renderingOrder = 10
-            
-            lipNode = node
-            faceNode.addChildNode(node)
-        }
-    }
-}
-
 // MARK: - View Model
 class MakeupViewModel: ObservableObject {
     @Published var selectedFeature: MakeupFeature?
@@ -473,3 +385,4 @@ enum MakeupFeature: String, CaseIterable, Hashable {
 #Preview {
     MakeupARView()
 }
+
