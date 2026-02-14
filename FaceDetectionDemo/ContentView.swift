@@ -57,13 +57,12 @@ struct MakeupARView: View {
                 
                 // AR Camera View
                 ARCameraView(viewModel: viewModel)
-                    .frame(width: 200, height: 200)
+                    .frame(width: 300, height: 250)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
                             .stroke(Color.white, lineWidth: 2)
                     )
-                
                 Spacer()
                     .frame(height: 40)
                 
@@ -255,7 +254,7 @@ struct FullColorPickerView: View {
                     .foregroundColor(.white)
                 TextField("#RRGGBB", text: $hexInput)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .onChange(of: hexInput) { oldValue, newValue in
+                    .onChange(of: hexInput) { newValue in
                         updateFromHex(newValue)
                     }
             }
@@ -352,6 +351,12 @@ class MakeupViewModel: ObservableObject {
     @Published var selectedFeature: MakeupFeature?
     @Published var selectedColor: Color = .red
     @Published var showColorPicker: Bool = false
+    
+    // Fine-tuning parameters for lip positioning (can be adjusted)
+    @Published var lipVerticalMin: Double = -0.050
+    @Published var lipVerticalMax: Double = -0.020
+    @Published var lipHorizontalMax: Double = 0.040
+    @Published var lipDepthMin: Double = -0.035
 }
 
 // MARK: - Makeup Feature Enum
