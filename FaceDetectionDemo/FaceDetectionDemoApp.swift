@@ -11,7 +11,7 @@ import SwiftUI
 struct FaceDetectionDemo: App {
     var body: some Scene {
         WindowGroup {
-                   MakeupARView()
+            MakeupARView()
         }
     }
 }
