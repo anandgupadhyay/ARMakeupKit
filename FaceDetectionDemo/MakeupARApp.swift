@@ -45,10 +45,11 @@ class MakeupViewModel: ObservableObject {
     @Published var selectedColor: Color = .red
     @Published var showColorPicker: Bool = false
     
-    @Published var lipVerticalMin: Double = -0.050
-    @Published var lipVerticalMax: Double = -0.020
-    @Published var lipHorizontalMax: Double = 0.040
-    @Published var lipDepthMin: Double = -0.035
+    // Lip positioning parameters - adjust these to fine-tune the shape
+    @Published var lipVerticalMin: Double = -0.052    // Bottom of lower lip
+    @Published var lipVerticalMax: Double = -0.015    // Top of upper lip
+    @Published var lipHorizontalMax: Double = 0.037   // Width at center
+    @Published var lipDepthMin: Double = -0.030       // Forward facing depth
 }
 
 // MARK: - AR Camera View
@@ -284,25 +285,29 @@ struct ARCameraView: UIViewRepresentable {
         func isInLipRegion(_ vertex: vector_float3) -> Bool {
             let y = vertex.y, x = vertex.x, z = vertex.z
             
+            // Use tunable parameters from viewModel
             let verticalMin = Float(viewModel.lipVerticalMin)
             let verticalMax = Float(viewModel.lipVerticalMax)
             let horizontalMax = Float(viewModel.lipHorizontalMax)
             let depthMin = Float(viewModel.lipDepthMin)
             
+            // Basic vertical bounds
             guard y > verticalMin && y < verticalMax else { return false }
+            
+            // Depth check - lips are forward-facing
             guard z > depthMin else { return false }
             
+            // Calculate position relative to lip center
             let verticalCenter = (verticalMin + verticalMax) / 2.0
             let verticalRange = verticalMax - verticalMin
-            let yNormalized = (y - verticalCenter) / verticalRange
+            let yNormalized = (y - verticalCenter) / (verticalRange / 2.0)
             
-            let ellipseMultiplier = 1.0 - abs(yNormalized) * 0.8
-            let maxXAtY = horizontalMax * ellipseMultiplier
+            // Create elliptical shape - wider in middle, narrower at top and bottom
+            let ellipseFactor = sqrt(max(0, 1.0 - yNormalized * yNormalized))
+            let maxXAtY = horizontalMax * ellipseFactor
             
-            guard abs(x) < maxXAtY else { return false }
-            
-            let distanceFromCenter = sqrt(x * x + (y - verticalCenter) * (y - verticalCenter) * 4.0)
-            return distanceFromCenter < 0.065
+            // Check horizontal bounds
+            return abs(x) < maxXAtY
         }
         
         private func makeGeometry(from face: ARFaceGeometry, with triangles: [Int32]) -> SCNGeometry? {
