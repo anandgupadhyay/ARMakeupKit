@@ -355,20 +355,20 @@ struct MakeupARView: View {
             VStack(spacing: 0) {
                 HStack {
                     Button(action: { print("Left button tapped") }) {
-                        Image(systemName: "chevron.left")
+                        Image(systemName: "gear")
                             .font(.title2)
-                            .foregroundColor(.white)
+                            .foregroundColor(.cyan)
                             .padding()
                     }
                     Spacer()
-                    Text("AR Makeup")
+                    Text("AI Makeup Assistant")
                         .font(.headline)
-                        .foregroundColor(.white)
+                        .foregroundColor(.cyan)
                     Spacer()
                     Button(action: { print("Right button tapped") }) {
                         Image(systemName: "camera")
                             .font(.title2)
-                            .foregroundColor(.white)
+                            .foregroundColor(.cyan)
                             .padding()
                     }
                 }
@@ -378,7 +378,7 @@ struct MakeupARView: View {
                 Spacer().frame(height: 100)
                 
                 ARCameraView(viewModel: viewModel)
-                    .frame(width: 300, height: 250)
+                    .frame(width: 380, height: 300)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white, lineWidth: 2))
                 
